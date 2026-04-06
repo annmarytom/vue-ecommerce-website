@@ -12,8 +12,9 @@ This changelog records the progress of the E-commerce website project from initi
 - Added GitHub Actions workflow for deploying static content to GitHub Pages.
 - Initialized Vue 3 project with Vite.
 - Added basic project structure and configuration files.
+- Basic UI for Home page is created.
 
 ### Changed
-- Updated Vite configuration to set base path for Task Dashboard.
+- Updated Vite configuration to set base path for SHOPSY E-commerce website.
 
 ---
