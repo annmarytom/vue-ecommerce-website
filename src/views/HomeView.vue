@@ -5,6 +5,8 @@
     <main class="content">
       <FilterSidebar
         v-model:search="search"
+        v-model:selected-categories="selectedCategories"
+        :categories="categories"
         :suggestions="suggestions"
         :search-history="filteredHistory"
         @select-search="handleSelectSearch"
@@ -14,6 +16,7 @@
       <section class="products-section">
         <ProductGrid
           :search="search"
+          :selected-categories="selectedCategories"
           @products-loaded="handleProductsLoaded"
         />
       </section>
@@ -30,6 +33,7 @@ import ProductGrid from '@/components/products/ProductGrid.vue'
 const search = ref('')
 const products = ref([])
 const searchHistory = ref([])
+const selectedCategories = ref([])
 
 const STORAGE_KEY = 'shopsy-search-history'
 
@@ -44,6 +48,10 @@ onMounted(() => {
 function handleProductsLoaded(productList) {
   products.value = productList
 }
+
+const categories = computed(() => {
+  return [...new Set(products.value.map((item) => item.category))].sort()
+})
 
 const suggestions = computed(() => {
   const keyword = search.value.trim().toLowerCase()

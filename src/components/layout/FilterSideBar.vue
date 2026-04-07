@@ -55,13 +55,19 @@
 
       <div class="section">
         <h3>CATEGORIES</h3>
-        <el-checkbox-group>
+
+        <el-checkbox-group
+          :model-value="selectedCategories"
+          @update:model-value="updateSelectedCategories"
+        >
           <div class="checkbox-list">
-            <el-checkbox label="Electronics" />
-            <el-checkbox label="Fashion" />
-            <el-checkbox label="Home" />
-            <el-checkbox label="Sports" />
-            <el-checkbox label="Accessories" />
+            <el-checkbox
+              v-for="category in categories"
+              :key="category"
+              :label="category"
+            >
+              {{ category }}
+            </el-checkbox>
           </div>
         </el-checkbox-group>
       </div>
@@ -94,10 +100,23 @@ const props = defineProps({
   searchHistory: {
     type: Array,
     default: () => []
+  },
+  categories: {
+    type: Array,
+    default: () => []
+  },
+  selectedCategories: {
+    type: Array,
+    default: () => []
   }
 })
 
-const emit = defineEmits(['update:search', 'select-search', 'save-search'])
+const emit = defineEmits([
+  'update:search',
+  'update:selected-categories',
+  'select-search',
+  'save-search'
+])
 
 const showDropdown = ref(false)
 const searchBoxRef = ref(null)
@@ -108,6 +127,10 @@ const visibleHistory = computed(() => props.searchHistory.slice(0, 5))
 function updateSearch(value) {
   emit('update:search', value)
   showDropdown.value = true
+}
+
+function updateSelectedCategories(value) {
+  emit('update:selected-categories', value)
 }
 
 function selectSearch(value) {

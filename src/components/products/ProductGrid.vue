@@ -46,6 +46,10 @@ const props = defineProps({
   search: {
     type: String,
     default: ''
+  },
+  selectedCategories: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -59,15 +63,17 @@ const sortBy = ref('name')
 const filteredProducts = computed(() => {
   const keyword = props.search.trim().toLowerCase()
 
-  if (!keyword) {
-    return products.value
-  }
-
   return products.value.filter((item) => {
-    return (
+    const matchesSearch =
+      !keyword ||
       item.name.toLowerCase().includes(keyword) ||
       item.category.toLowerCase().includes(keyword)
-    )
+
+    const matchesCategory =
+      props.selectedCategories.length === 0 ||
+      props.selectedCategories.includes(item.category)
+
+    return matchesSearch && matchesCategory
   })
 })
 
