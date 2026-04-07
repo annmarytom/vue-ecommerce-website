@@ -13,13 +13,17 @@
     </div>
 
     <div v-if="loading" class="loader-wrapper">
-  <el-icon class="is-loading" size="40">
-    <Loading />
-  </el-icon>
-</div>
+      <el-icon class="is-loading" size="40">
+        <Loading />
+      </el-icon>
+    </div>
 
     <div v-else-if="error" class="error-box">
       {{ error }}
+    </div>
+
+    <div v-else-if="sortedProducts.length === 0" class="empty-box">
+      No products found
     </div>
 
     <div v-else class="grid">
@@ -38,13 +42,37 @@ import ProductCard from './ProductCard.vue'
 import { fetchProducts } from '@/service/productService'
 import { Loading } from '@element-plus/icons-vue'
 
+const props = defineProps({
+  search: {
+    type: String,
+    default: ''
+  }
+})
+
+const emit = defineEmits(['products-loaded'])
+
 const products = ref([])
 const loading = ref(false)
 const error = ref('')
 const sortBy = ref('name')
 
+const filteredProducts = computed(() => {
+  const keyword = props.search.trim().toLowerCase()
+
+  if (!keyword) {
+    return products.value
+  }
+
+  return products.value.filter((item) => {
+    return (
+      item.name.toLowerCase().includes(keyword) ||
+      item.category.toLowerCase().includes(keyword)
+    )
+  })
+})
+
 const sortedProducts = computed(() => {
-  const copied = [...products.value]
+  const copied = [...filteredProducts.value]
 
   if (sortBy.value === 'price') {
     return copied.sort((a, b) => a.price - b.price)
@@ -58,7 +86,9 @@ async function loadProducts() {
   error.value = ''
 
   try {
-    products.value = await fetchProducts()
+    const result = await fetchProducts()
+    products.value = result
+    emit('products-loaded', result)
   } catch (err) {
     error.value = err.message || 'Something went wrong'
   } finally {
@@ -96,14 +126,16 @@ h2 {
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
+
 .error-box,
-.loader-wrapper {
+.loader-wrapper,
+.empty-box {
   height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #1c2f57;
   border-radius: 20px;
-  color:white;
+  color: white;
 }
 </style>
