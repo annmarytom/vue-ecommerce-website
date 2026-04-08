@@ -50,6 +50,10 @@ const props = defineProps({
   selectedCategories: {
     type: Array,
     default: () => []
+  },
+  priceRange: {
+    type: Array,
+    default: () => [0, Infinity]
   }
 })
 
@@ -62,6 +66,8 @@ const sortBy = ref('name')
 
 const filteredProducts = computed(() => {
   const keyword = props.search.trim().toLowerCase()
+  const minPrice = props.priceRange[0]
+  const maxPrice = props.priceRange[1]
 
   return products.value.filter((item) => {
     const matchesSearch =
@@ -73,7 +79,10 @@ const filteredProducts = computed(() => {
       props.selectedCategories.length === 0 ||
       props.selectedCategories.includes(item.category)
 
-    return matchesSearch && matchesCategory
+    const matchesPrice =
+      item.price >= minPrice && item.price <= maxPrice
+
+    return matchesSearch && matchesCategory && matchesPrice
   })
 })
 

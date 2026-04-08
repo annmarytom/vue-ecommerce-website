@@ -6,9 +6,11 @@
       <FilterSidebar
         v-model:search="search"
         v-model:selected-categories="selectedCategories"
+        v-model:price-range="priceRange"
         :categories="categories"
         :suggestions="suggestions"
         :search-history="filteredHistory"
+        :max-price="maxPrice"
         @select-search="handleSelectSearch"
         @save-search="saveSearch"
       />
@@ -17,6 +19,7 @@
         <ProductGrid
           :search="search"
           :selected-categories="selectedCategories"
+          :price-range="priceRange"
           @products-loaded="handleProductsLoaded"
         />
       </section>
@@ -34,6 +37,8 @@ const search = ref('')
 const products = ref([])
 const searchHistory = ref([])
 const selectedCategories = ref([])
+const priceRange = ref([0, 2000])
+const maxPrice = ref(2000)
 
 const STORAGE_KEY = 'shopsy-search-history'
 
@@ -47,6 +52,13 @@ onMounted(() => {
 
 function handleProductsLoaded(productList) {
   products.value = productList
+
+  const highestPrice = Math.ceil(
+    Math.max(...productList.map((item) => item.price), 0)
+  )
+
+  maxPrice.value = highestPrice || 2000
+  priceRange.value = [0, maxPrice.value]
 }
 
 const categories = computed(() => {

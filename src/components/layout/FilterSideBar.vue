@@ -74,11 +74,19 @@
 
       <div class="section">
         <h3>PRICE RANGE</h3>
-        <el-slider range />
+
+        <el-slider
+          :model-value="priceRange"
+          @update:model-value="updatePriceRange"
+          range
+          :min="0"
+          :max="maxPrice"
+        />
+
         <div class="price-box">
-          <span>$0</span>
+          <span>${{ priceRange[0] }}</span>
           <span>-</span>
-          <span>$2000</span>
+          <span>${{ priceRange[1] }}</span>
         </div>
       </div>
     </el-card>
@@ -108,12 +116,21 @@ const props = defineProps({
   selectedCategories: {
     type: Array,
     default: () => []
+  },
+  priceRange: {
+    type: Array,
+    default: () => [0, 2000]
+  },
+  maxPrice: {
+    type: Number,
+    default: 2000
   }
 })
 
 const emit = defineEmits([
   'update:search',
   'update:selected-categories',
+  'update:price-range',
   'select-search',
   'save-search'
 ])
@@ -131,6 +148,10 @@ function updateSearch(value) {
 
 function updateSelectedCategories(value) {
   emit('update:selected-categories', value)
+}
+
+function updatePriceRange(value) {
+  emit('update:price-range', value)
 }
 
 function selectSearch(value) {
