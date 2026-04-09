@@ -3,6 +3,7 @@
     <AppHeader
       :favorite-count="favoriteCount"
       :cart-count="cartCount"
+      @favorites-click="handleFavoritesClick"
     />
 
     <main class="content">
@@ -31,14 +32,28 @@
         />
       </section>
     </main>
+
+    <LoginModal
+      v-model="showLoginModal"
+      @login-success="handleLoginSuccess"
+    />
+
+    <FavoritesModal
+      v-model="showFavoritesModal"
+      :favorite-products="favoriteProducts"
+      @remove-favorite="removeFavorite"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import FilterSidebar from '@/components/layout/FilterSideBar.vue'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import ProductGrid from '@/components/products/ProductGrid.vue'
+import LoginModal from '@/components/auth/LoginModal.vue'
+import FavoritesModal from '@/components/products/FavoritesModal.vue'
 
 const search = ref('')
 const products = ref([])
@@ -50,14 +65,20 @@ const maxPrice = ref(2000)
 const favoriteIds = ref([])
 const cartItems = ref({})
 
+const isLoggedIn = ref(false)
+const showLoginModal = ref(false)
+const showFavoritesModal = ref(false)
+
 const SEARCH_HISTORY_KEY = 'shopsy-search-history'
 const FAVORITES_KEY = 'shopsy-favorites'
 const CART_KEY = 'shopsy-cart'
+const LOGIN_KEY = 'shopsy-is-logged-in'
 
 onMounted(() => {
   searchHistory.value = readLocalStorage(SEARCH_HISTORY_KEY, [])
   favoriteIds.value = readLocalStorage(FAVORITES_KEY, [])
   cartItems.value = readLocalStorage(CART_KEY, {})
+  isLoggedIn.value = readLocalStorage(LOGIN_KEY, false)
 })
 
 function readLocalStorage(key, fallbackValue) {
@@ -119,6 +140,10 @@ const cartCount = computed(() => {
   return Object.values(cartItems.value).reduce((total, count) => total + count, 0)
 })
 
+const favoriteProducts = computed(() => {
+  return products.value.filter((item) => favoriteIds.value.includes(item.id))
+})
+
 function saveSearch(term = search.value) {
   const cleanTerm = term.trim()
 
@@ -144,6 +169,21 @@ function handleSelectSearch(term) {
   saveSearch(term)
 }
 
+function handleFavoritesClick() {
+  if (!isLoggedIn.value) {
+    showLoginModal.value = true
+    return
+  }
+
+  showFavoritesModal.value = true
+}
+
+function handleLoginSuccess() {
+  isLoggedIn.value = true
+  localStorage.setItem(LOGIN_KEY, JSON.stringify(true))
+  showFavoritesModal.value = true
+}
+
 function toggleFavorite(product) {
   const productId = product.id
 
@@ -157,6 +197,17 @@ function toggleFavorite(product) {
     FAVORITES_KEY,
     JSON.stringify(favoriteIds.value)
   )
+}
+
+function removeFavorite(product) {
+  favoriteIds.value = favoriteIds.value.filter((id) => id !== product.id)
+
+  localStorage.setItem(
+    FAVORITES_KEY,
+    JSON.stringify(favoriteIds.value)
+  )
+
+  ElMessage.success('Removed from favourites')
 }
 
 function addToCart(product) {

@@ -4,7 +4,7 @@
   
       <div class="actions">
         <el-badge :value="favoriteCount" :hidden="favoriteCount === 0">
-          <el-button round>
+          <el-button round @click="emit('favorites-click')">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -41,7 +41,9 @@
           </el-button>
         </el-badge>
   
-        <el-button type="success" round>Login</el-button>
+        <el-button type="success" round>
+          Login
+        </el-button>
       </div>
     </header>
   </template>
@@ -57,6 +59,8 @@
       default: 0
     }
   })
+  
+  const emit = defineEmits(['favorites-click'])
   </script>
   
   <style scoped>
