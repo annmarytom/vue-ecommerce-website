@@ -31,6 +31,10 @@
         v-for="item in sortedProducts"
         :key="item.id"
         :product="item"
+        :is-favorite="favoriteIds.includes(item.id)"
+        :cart-count="cartItems[item.id] || 0"
+        @toggle-favorite="emit('toggle-favorite', $event)"
+        @add-to-cart="emit('add-to-cart', $event)"
       />
     </div>
   </section>
@@ -54,10 +58,22 @@ const props = defineProps({
   priceRange: {
     type: Array,
     default: () => [0, Infinity]
+  },
+  favoriteIds: {
+    type: Array,
+    default: () => []
+  },
+  cartItems: {
+    type: Object,
+    default: () => ({})
   }
 })
 
-const emit = defineEmits(['products-loaded'])
+const emit = defineEmits([
+  'products-loaded',
+  'toggle-favorite',
+  'add-to-cart'
+])
 
 const products = ref([])
 const loading = ref(false)

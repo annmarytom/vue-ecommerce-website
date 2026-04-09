@@ -1,6 +1,9 @@
 <template>
   <div class="page">
-    <AppHeader />
+    <AppHeader
+      :favorite-count="favoriteCount"
+      :cart-count="cartCount"
+    />
 
     <main class="content">
       <FilterSidebar
@@ -20,7 +23,11 @@
           :search="search"
           :selected-categories="selectedCategories"
           :price-range="priceRange"
+          :favorite-ids="favoriteIds"
+          :cart-items="cartItems"
           @products-loaded="handleProductsLoaded"
+          @toggle-favorite="toggleFavorite"
+          @add-to-cart="addToCart"
         />
       </section>
     </main>
@@ -40,15 +47,32 @@ const selectedCategories = ref([])
 const priceRange = ref([0, 2000])
 const maxPrice = ref(2000)
 
-const STORAGE_KEY = 'shopsy-search-history'
+const favoriteIds = ref([])
+const cartItems = ref({})
+
+const SEARCH_HISTORY_KEY = 'shopsy-search-history'
+const FAVORITES_KEY = 'shopsy-favorites'
+const CART_KEY = 'shopsy-cart'
 
 onMounted(() => {
-  const savedHistory = localStorage.getItem(STORAGE_KEY)
-
-  if (savedHistory) {
-    searchHistory.value = JSON.parse(savedHistory)
-  }
+  searchHistory.value = readLocalStorage(SEARCH_HISTORY_KEY, [])
+  favoriteIds.value = readLocalStorage(FAVORITES_KEY, [])
+  cartItems.value = readLocalStorage(CART_KEY, {})
 })
+
+function readLocalStorage(key, fallbackValue) {
+  try {
+    const savedValue = localStorage.getItem(key)
+
+    if (!savedValue) {
+      return fallbackValue
+    }
+
+    return JSON.parse(savedValue)
+  } catch {
+    return fallbackValue
+  }
+}
 
 function handleProductsLoaded(productList) {
   products.value = productList
@@ -89,6 +113,12 @@ const filteredHistory = computed(() => {
     .slice(0, 5)
 })
 
+const favoriteCount = computed(() => favoriteIds.value.length)
+
+const cartCount = computed(() => {
+  return Object.values(cartItems.value).reduce((total, count) => total + count, 0)
+})
+
 function saveSearch(term = search.value) {
   const cleanTerm = term.trim()
 
@@ -103,12 +133,45 @@ function saveSearch(term = search.value) {
     )
   ].slice(0, 8)
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(searchHistory.value))
+  localStorage.setItem(
+    SEARCH_HISTORY_KEY,
+    JSON.stringify(searchHistory.value)
+  )
 }
 
 function handleSelectSearch(term) {
   search.value = term
   saveSearch(term)
+}
+
+function toggleFavorite(product) {
+  const productId = product.id
+
+  if (favoriteIds.value.includes(productId)) {
+    favoriteIds.value = favoriteIds.value.filter((id) => id !== productId)
+  } else {
+    favoriteIds.value = [...favoriteIds.value, productId]
+  }
+
+  localStorage.setItem(
+    FAVORITES_KEY,
+    JSON.stringify(favoriteIds.value)
+  )
+}
+
+function addToCart(product) {
+  const productId = product.id
+  const currentCount = cartItems.value[productId] || 0
+
+  cartItems.value = {
+    ...cartItems.value,
+    [productId]: currentCount + 1
+  }
+
+  localStorage.setItem(
+    CART_KEY,
+    JSON.stringify(cartItems.value)
+  )
 }
 </script>
 
