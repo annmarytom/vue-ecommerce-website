@@ -3,7 +3,10 @@
     <AppHeader
       :favorite-count="favoriteCount"
       :cart-count="cartCount"
+      :is-logged-in="isLoggedIn"
       @favorites-click="handleFavoritesClick"
+      @cart-click="handleCartClick"
+      @auth-click="handleAuthClick"
     />
 
     <main class="content">
@@ -41,7 +44,17 @@
     <FavoritesModal
       v-model="showFavoritesModal"
       :favorite-products="favoriteProducts"
+      :display-name="displayName"
       @remove-favorite="removeFavorite"
+    />
+
+    <CartModal
+      v-model="showCartModal"
+      :cart-products="cartProducts"
+      :total-amount="cartTotal"
+      @increase-quantity="increaseCartQuantity"
+      @decrease-quantity="decreaseCartQuantity"
+      @remove-cart-item="removeCartItem"
     />
   </div>
 </template>
@@ -54,6 +67,8 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import ProductGrid from '@/components/products/ProductGrid.vue'
 import LoginModal from '@/components/auth/LoginModal.vue'
 import FavoritesModal from '@/components/products/FavoritesModal.vue'
+import CartModal from '@/components/products/CartModal.vue'
+import { getCurrentAuthUser } from '@/service/authService'
 
 const search = ref('')
 const products = ref([])
@@ -62,23 +77,51 @@ const selectedCategories = ref([])
 const priceRange = ref([0, 2000])
 const maxPrice = ref(2000)
 
-const favoriteIds = ref([])
+const favoritesByUser = ref({})
 const cartItems = ref({})
 
 const isLoggedIn = ref(false)
+const currentUser = ref({
+  id: null,
+  username: '',
+  firstName: '',
+  lastName: '',
+  email: '',
+  image: ''
+})
+
 const showLoginModal = ref(false)
 const showFavoritesModal = ref(false)
+const showCartModal = ref(false)
+
+const shouldOpenFavoritesAfterLogin = ref(false)
+const pendingFavoriteProduct = ref(null)
 
 const SEARCH_HISTORY_KEY = 'shopsy-search-history'
-const FAVORITES_KEY = 'shopsy-favorites'
+const FAVORITES_BY_USER_KEY = 'shopsy-favorites-by-user'
 const CART_KEY = 'shopsy-cart'
-const LOGIN_KEY = 'shopsy-is-logged-in'
+const AUTH_USER_KEY = 'shopsy-auth-user'
+const ACCESS_TOKEN_KEY = 'shopsy-access-token'
+const REFRESH_TOKEN_KEY = 'shopsy-refresh-token'
 
-onMounted(() => {
+onMounted(async () => {
   searchHistory.value = readLocalStorage(SEARCH_HISTORY_KEY, [])
-  favoriteIds.value = readLocalStorage(FAVORITES_KEY, [])
+  favoritesByUser.value = readLocalStorage(FAVORITES_BY_USER_KEY, {})
   cartItems.value = readLocalStorage(CART_KEY, {})
-  isLoggedIn.value = readLocalStorage(LOGIN_KEY, false)
+
+  const savedUser = readLocalStorage(AUTH_USER_KEY, null)
+  const accessToken = readLocalStorage(ACCESS_TOKEN_KEY, '')
+
+  if (savedUser && accessToken) {
+    try {
+      const latestUser = await getCurrentAuthUser(accessToken)
+      currentUser.value = latestUser
+      isLoggedIn.value = true
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(latestUser))
+    } catch {
+      clearAuthStorage()
+    }
+  }
 })
 
 function readLocalStorage(key, fallbackValue) {
@@ -94,6 +137,50 @@ function readLocalStorage(key, fallbackValue) {
     return fallbackValue
   }
 }
+
+function writeLocalStorage(key, value) {
+  localStorage.setItem(key, JSON.stringify(value))
+}
+
+function clearAuthStorage() {
+  localStorage.removeItem(AUTH_USER_KEY)
+  localStorage.removeItem(ACCESS_TOKEN_KEY)
+  localStorage.removeItem(REFRESH_TOKEN_KEY)
+
+  isLoggedIn.value = false
+  currentUser.value = {
+    id: null,
+    username: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    image: ''
+  }
+}
+
+const currentUserKey = computed(() => {
+  if (!isLoggedIn.value || !currentUser.value.username) {
+    return ''
+  }
+
+  return currentUser.value.username.toLowerCase()
+})
+
+const favoriteIds = computed(() => {
+  if (!currentUserKey.value) {
+    return []
+  }
+
+  return favoritesByUser.value[currentUserKey.value] || []
+})
+
+const displayName = computed(() => {
+  if (currentUser.value.firstName) {
+    return currentUser.value.firstName
+  }
+
+  return currentUser.value.username || ''
+})
 
 function handleProductsLoaded(productList) {
   products.value = productList
@@ -134,7 +221,9 @@ const filteredHistory = computed(() => {
     .slice(0, 5)
 })
 
-const favoriteCount = computed(() => favoriteIds.value.length)
+const favoriteCount = computed(() => {
+  return isLoggedIn.value ? favoriteIds.value.length : 0
+})
 
 const cartCount = computed(() => {
   return Object.values(cartItems.value).reduce((total, count) => total + count, 0)
@@ -142,6 +231,21 @@ const cartCount = computed(() => {
 
 const favoriteProducts = computed(() => {
   return products.value.filter((item) => favoriteIds.value.includes(item.id))
+})
+
+const cartProducts = computed(() => {
+  return products.value
+    .filter((item) => cartItems.value[item.id])
+    .map((item) => ({
+      ...item,
+      quantity: cartItems.value[item.id]
+    }))
+})
+
+const cartTotal = computed(() => {
+  return cartProducts.value.reduce((total, item) => {
+    return total + item.price * item.quantity
+  }, 0)
 })
 
 function saveSearch(term = search.value) {
@@ -158,10 +262,7 @@ function saveSearch(term = search.value) {
     )
   ].slice(0, 8)
 
-  localStorage.setItem(
-    SEARCH_HISTORY_KEY,
-    JSON.stringify(searchHistory.value)
-  )
+  writeLocalStorage(SEARCH_HISTORY_KEY, searchHistory.value)
 }
 
 function handleSelectSearch(term) {
@@ -171,6 +272,7 @@ function handleSelectSearch(term) {
 
 function handleFavoritesClick() {
   if (!isLoggedIn.value) {
+    shouldOpenFavoritesAfterLogin.value = true
     showLoginModal.value = true
     return
   }
@@ -178,35 +280,104 @@ function handleFavoritesClick() {
   showFavoritesModal.value = true
 }
 
-function handleLoginSuccess() {
+function handleCartClick() {
+  showCartModal.value = true
+}
+
+function handleAuthClick() {
+  if (isLoggedIn.value) {
+    logoutUser()
+    return
+  }
+
+  showLoginModal.value = true
+}
+
+function handleLoginSuccess(userData) {
+  currentUser.value = {
+    id: userData.id,
+    username: userData.username,
+    firstName: userData.firstName,
+    lastName: userData.lastName,
+    email: userData.email,
+    image: userData.image
+  }
+
   isLoggedIn.value = true
-  localStorage.setItem(LOGIN_KEY, JSON.stringify(true))
-  showFavoritesModal.value = true
+
+  writeLocalStorage(AUTH_USER_KEY, currentUser.value)
+  writeLocalStorage(ACCESS_TOKEN_KEY, userData.accessToken)
+  writeLocalStorage(REFRESH_TOKEN_KEY, userData.refreshToken)
+
+  if (pendingFavoriteProduct.value) {
+    toggleFavoriteForCurrentUser(pendingFavoriteProduct.value)
+    pendingFavoriteProduct.value = null
+  }
+
+  if (shouldOpenFavoritesAfterLogin.value) {
+    showFavoritesModal.value = true
+    shouldOpenFavoritesAfterLogin.value = false
+  }
+}
+
+function logoutUser() {
+  clearAuthStorage()
+  showFavoritesModal.value = false
+  shouldOpenFavoritesAfterLogin.value = false
+  pendingFavoriteProduct.value = null
+  ElMessage.success('Logged out successfully')
 }
 
 function toggleFavorite(product) {
-  const productId = product.id
-
-  if (favoriteIds.value.includes(productId)) {
-    favoriteIds.value = favoriteIds.value.filter((id) => id !== productId)
-  } else {
-    favoriteIds.value = [...favoriteIds.value, productId]
+  if (!isLoggedIn.value) {
+    pendingFavoriteProduct.value = product
+    showLoginModal.value = true
+    ElMessage.warning('Please login to manage favourites')
+    return
   }
 
-  localStorage.setItem(
-    FAVORITES_KEY,
-    JSON.stringify(favoriteIds.value)
+  toggleFavoriteForCurrentUser(product)
+}
+
+function toggleFavoriteForCurrentUser(product) {
+  const userKey = currentUserKey.value
+
+  if (!userKey) {
+    return
+  }
+
+  const currentFavorites = favoritesByUser.value[userKey] || []
+  const alreadyAdded = currentFavorites.includes(product.id)
+
+  favoritesByUser.value = {
+    ...favoritesByUser.value,
+    [userKey]: alreadyAdded
+      ? currentFavorites.filter((id) => id !== product.id)
+      : [...currentFavorites, product.id]
+  }
+
+  writeLocalStorage(FAVORITES_BY_USER_KEY, favoritesByUser.value)
+
+  ElMessage.success(
+    alreadyAdded ? 'Removed from favourites' : 'Added to favourites'
   )
 }
 
 function removeFavorite(product) {
-  favoriteIds.value = favoriteIds.value.filter((id) => id !== product.id)
+  const userKey = currentUserKey.value
 
-  localStorage.setItem(
-    FAVORITES_KEY,
-    JSON.stringify(favoriteIds.value)
-  )
+  if (!userKey) {
+    return
+  }
 
+  const currentFavorites = favoritesByUser.value[userKey] || []
+
+  favoritesByUser.value = {
+    ...favoritesByUser.value,
+    [userKey]: currentFavorites.filter((id) => id !== product.id)
+  }
+
+  writeLocalStorage(FAVORITES_BY_USER_KEY, favoritesByUser.value)
   ElMessage.success('Removed from favourites')
 }
 
@@ -219,10 +390,44 @@ function addToCart(product) {
     [productId]: currentCount + 1
   }
 
-  localStorage.setItem(
-    CART_KEY,
-    JSON.stringify(cartItems.value)
-  )
+  writeLocalStorage(CART_KEY, cartItems.value)
+  ElMessage.success('Added to cart')
+}
+
+function increaseCartQuantity(product) {
+  const currentCount = cartItems.value[product.id] || 0
+
+  cartItems.value = {
+    ...cartItems.value,
+    [product.id]: currentCount + 1
+  }
+
+  writeLocalStorage(CART_KEY, cartItems.value)
+}
+
+function decreaseCartQuantity(product) {
+  const currentCount = cartItems.value[product.id] || 0
+
+  if (currentCount <= 1) {
+    removeCartItem(product)
+    return
+  }
+
+  cartItems.value = {
+    ...cartItems.value,
+    [product.id]: currentCount - 1
+  }
+
+  writeLocalStorage(CART_KEY, cartItems.value)
+}
+
+function removeCartItem(product) {
+  const updatedCart = { ...cartItems.value }
+  delete updatedCart[product.id]
+  cartItems.value = updatedCart
+
+  writeLocalStorage(CART_KEY, cartItems.value)
+  ElMessage.success('Removed from cart')
 }
 </script>
 
