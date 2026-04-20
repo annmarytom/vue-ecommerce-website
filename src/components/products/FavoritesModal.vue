@@ -81,8 +81,8 @@ function closeDialog() {
 
 <style scoped>
 .favorites-card {
-  background: #1b2b4a;
-  color: white;
+  background: linear-gradient(180deg, #fffaf6 0%, #f7efe7 100%);
+  color: var(--pf-text);
 }
 
 .favorites-header {
@@ -100,22 +100,26 @@ function closeDialog() {
 
 .welcome-text {
   margin: 6px 0 0;
-  color: #b7c6e3;
+  color: var(--pf-text-soft);
   font-size: 15px;
   font-weight: 600;
 }
 
 .close-btn {
   border: none;
-  background: transparent;
-  color: #9fb3d9;
-  font-size: 32px;
+  background: #f3e7dc;
+  color: var(--pf-accent);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   line-height: 1;
   cursor: pointer;
+  font-size: 28px;
 }
 
 .close-btn:hover {
-  color: white;
+  background: #ead8ca;
+  color: var(--pf-accent-dark);
 }
 
 .empty-box {
@@ -123,10 +127,11 @@ function closeDialog() {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #c7d3e9;
+  color: var(--pf-text-soft);
   font-size: 16px;
-  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border: 1px dashed var(--pf-border-strong);
   border-radius: 16px;
+  background: #fffdfb;
 }
 
 .favorites-grid {
@@ -138,10 +143,11 @@ function closeDialog() {
 .favorite-item {
   display: flex;
   gap: 14px;
-  background: #071738;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid var(--pf-border);
+  border-radius: 18px;
   padding: 14px;
+  box-shadow: 0 10px 24px rgba(74, 46, 36, 0.06);
 }
 
 .favorite-image {
@@ -150,6 +156,7 @@ function closeDialog() {
   object-fit: cover;
   border-radius: 12px;
   flex-shrink: 0;
+  border: 1px solid var(--pf-border);
 }
 
 .favorite-content {
@@ -160,26 +167,35 @@ function closeDialog() {
 .favorite-content h3 {
   margin: 0 0 8px;
   font-size: 18px;
-  color: white;
+  color: var(--pf-text);
 }
 
 .category {
   margin: 0 0 8px;
-  color: #b7c6e3;
+  color: var(--pf-text-soft);
   font-size: 13px;
 }
 
 .price {
   margin: 0 0 14px;
-  color: #08f0b0;
+  color: var(--pf-accent);
   font-size: 18px;
+  font-weight: 800;
+}
+
+.remove-btn {
+  border-radius: 999px;
+  color: #9a4f46;
+  border-color: #e5c0bb;
+  background: #faecea;
   font-weight: 700;
 }
 
 :deep(.favorites-dialog .el-dialog) {
-  background: #1b2b4a;
-  border-radius: 22px;
+  background: #fffaf6;
+  border-radius: 24px;
   padding: 26px;
+  box-shadow: 0 24px 60px rgba(74, 46, 36, 0.16);
 }
 
 :deep(.favorites-dialog .el-dialog__header) {
@@ -188,9 +204,5 @@ function closeDialog() {
 
 :deep(.favorites-dialog .el-dialog__body) {
   padding: 0;
-}
-.close-button{
-  width:22px;
-  height: 22px;
 }
 </style>

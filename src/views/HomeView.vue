@@ -430,19 +430,20 @@ function removeCartItem(product) {
   ElMessage.success('Removed from cart')
 }
 </script>
-
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #03163b;
+  background:
+    radial-gradient(circle at top right, rgba(184, 138, 90, 0.12), transparent 18%),
+    linear-gradient(180deg, #fbf7f2 0%, #f6f1ea 50%, #f1e8dd 100%);
 }
 
 .content {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 28px 24px 40px;
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 300px 1fr;
   gap: 24px;
 }
 

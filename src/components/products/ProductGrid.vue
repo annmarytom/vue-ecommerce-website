@@ -140,16 +140,28 @@ onMounted(() => {
   margin-bottom: 18px;
 }
 
+.eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pf-gold);
+  margin-bottom: 4px;
+}
+
 h2 {
-  color: white;
-  font-size: 20px;
+  color: var(--pf-text);
+  font-size: 28px;
+  margin: 0;
 }
 
 .sort-box {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: white;
+  color: var(--pf-text);
+  font-weight: 600;
 }
 
 .grid {
@@ -165,8 +177,10 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1c2f57;
-  border-radius: 20px;
-  color: white;
+  background: rgba(255, 250, 245, 0.95);
+  border-radius: 22px;
+  color: var(--pf-text);
+  border: 1px solid var(--pf-border);
+  box-shadow: var(--pf-shadow);
 }
 </style>

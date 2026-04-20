@@ -81,14 +81,22 @@
   
   <style scoped>
   .product-card {
-    background: #1c2f57;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid var(--pf-border);
+    border-radius: 22px;
     overflow: hidden;
+    box-shadow: 0 12px 30px rgba(74, 46, 36, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 36px rgba(74, 46, 36, 0.12);
   }
   
   .image-wrapper {
     position: relative;
+    background: #f8efe7;
   }
   
   .product-image {
@@ -104,10 +112,10 @@
     right: 12px;
     width: 42px;
     height: 42px;
-    border: none;
+    border: 1px solid rgba(232, 217, 202, 0.9);
     border-radius: 50%;
-    background: rgba(3, 22, 59, 0.75);
-    color: #ffffff;
+    background: rgba(255, 250, 244, 0.96);
+    color: var(--pf-text-soft);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -117,11 +125,13 @@
   
   .favorite-btn:hover {
     transform: scale(1.05);
+    color: var(--pf-accent);
   }
   
   .favorite-btn.active {
-    background: #ffffff;
-    color: #e71961;
+    background: var(--pf-accent);
+    color: #ffffff;
+    border-color: var(--pf-accent);
   }
   
   .favorite-icon {
@@ -130,25 +140,26 @@
   }
   
   .card-body {
-    padding: 16px;
+    padding: 18px;
   }
   
   h3 {
-    color: #eaeef5;
+    color: var(--pf-text);
     font-size: 20px;
-    margin-bottom: 6px;
+    margin: 0 0 6px;
   }
   
   .category {
-    color: #cbd5e1;
+    color: var(--pf-text-soft);
     font-size: 12px;
-    margin-bottom: 8px;
+    margin: 0 0 10px;
+    letter-spacing: 0.05em;
   }
   
   .rating {
-    color: #ffd166;
+    color: var(--pf-gold);
     font-size: 14px;
-    margin-bottom: 14px;
+    margin: 0 0 14px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -162,9 +173,22 @@
   }
   
   .price {
-    color: #e71961;
-    font-size: 22px;
+    color: var(--pf-accent);
+    font-size: 24px;
+    font-weight: 800;
+  }
+  
+  .cart-btn {
+    border-color: var(--pf-accent);
+    background: var(--pf-accent);
+    color: #ffffff;
     font-weight: 700;
+  }
+  
+  .cart-btn:hover {
+    border-color: var(--pf-accent-dark);
+    background: var(--pf-accent-dark);
+    color: #ffffff;
   }
   
   .ratings {

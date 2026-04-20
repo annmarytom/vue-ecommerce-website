@@ -55,25 +55,69 @@ const emit = defineEmits([
 
 <style scoped>
 .header {
-  height: 72px;
-  background: #1c2f57;
+  height: 86px;
+  background: rgba(255, 250, 244, 0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(216, 192, 170, 0.7);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.logo-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .logo {
-  color: white;
-  font-size: 22px;
+  color: var(--pf-accent);
+  font-size: 28px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+}
+
+.tagline {
+  font-size: 12px;
+  color: var(--pf-text-soft);
 }
 
 .actions {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.icon-btn {
+  width: 46px;
+  height: 46px;
+  border-color: var(--pf-border);
+  background: #ffffff;
+  color: var(--pf-text);
+}
+
+.icon-btn:hover {
+  color: var(--pf-accent);
+  border-color: #cfb49d;
+  background: #fffaf5;
+}
+
+.auth-btn {
+  min-width: 112px;
+  border-color: var(--pf-accent);
+  background: var(--pf-accent);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.auth-btn:hover {
+  border-color: var(--pf-accent-dark);
+  background: var(--pf-accent-dark);
+  color: #ffffff;
 }
 
 .icons {

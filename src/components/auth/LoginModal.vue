@@ -98,36 +98,48 @@ async function submitLogin() {
 
 <style scoped>
 .login-card {
-  background: #1b2b4a;
-  color: white;
-  padding: 8px 6px 6px;
+  background: linear-gradient(180deg, #fffaf6 0%, #f7efe7 100%);
+  color: var(--pf-text);
+  padding: 4px;
 }
 
 .login-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 10px;
 }
 
 .login-header h2 {
   margin: 0;
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--pf-text);
+}
+
+.subtext {
+  margin: 0 0 24px;
+  color: var(--pf-text-soft);
+  line-height: 1.6;
 }
 
 .close-btn {
   border: none;
-  background: transparent;
-  color: #9fb3d9;
-  font-size: 32px;
-  line-height: 1;
+  background: #f3e7dc;
+  color: var(--pf-accent);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-  color: #ffffff;
+  background: #ead8ca;
+  color: var(--pf-accent-dark);
 }
 
 .login-form {
@@ -144,40 +156,40 @@ async function submitLogin() {
 
 .field-label {
   font-size: 15px;
-  font-weight: 600;
-  color: #e7edf8;
+  font-weight: 700;
+  color: var(--pf-text);
 }
 
 :deep(.custom-input .el-input__wrapper) {
-  background: #071738;
-  box-shadow: none;
-  border: 1px solid #35507d;
+  background: #ffffff;
+  border: 1px solid var(--pf-border);
   border-radius: 14px;
   min-height: 56px;
 }
 
 :deep(.custom-input .el-input__inner) {
-  color: #ffffff;
+  color: var(--pf-text);
   font-size: 16px;
 }
 
 :deep(.custom-input .el-input__inner::placeholder) {
-  color: #93a7c7;
+  color: #aa8c7b;
 }
 
 .login-btn {
   width: 100%;
-  height: 56px;
-  border: none;
+  height: 54px;
   border-radius: 14px;
   font-size: 18px;
   font-weight: 700;
+  margin-top: 4px;
 }
 
 :deep(.login-dialog .el-dialog) {
-  background: #1b2b4a;
-  border-radius: 22px;
-  padding: 26px;
+  background: #fffaf6;
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 24px 60px rgba(74, 46, 36, 0.16);
 }
 
 :deep(.login-dialog .el-dialog__header) {
@@ -189,7 +201,7 @@ async function submitLogin() {
 }
 
 .close-button {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 </style>
