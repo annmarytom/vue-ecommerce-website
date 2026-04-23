@@ -6,6 +6,17 @@ This project follows a structured changelog format with versioned releases and r
 
 ---
 
+## [0.8.1] - 2026-04-23
+
+### Fixed
+- Removed unwanted padding from the login modal dialog,Favourites modal and Add to cart modal.
+- Updated `Login Modal`,`Favourires Modal` and `Add to Cart` dialog styling so the Element Plus dialog container, header, body, and inner card wrapper no longer add extra spacing.
+
+### Changed
+- Moved dialog-level padding overrides to a non-scoped style block for more reliable Element Plus modal styling.
+
+
+
 ## [0.8.0] - 2026-04-23
 
 ### Added

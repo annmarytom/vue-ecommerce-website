@@ -111,6 +111,8 @@
 .cart-card {
   background: linear-gradient(180deg, #fffaf6 0%, #f7efe7 100%);
   color: var(--pf-text);
+  padding:20px;
+  border-radius: 10px;
 }
 
 .cart-header {
@@ -245,13 +247,6 @@
   font-size: 22px;
   font-weight: 800;
   color: var(--pf-accent);
-}
-
-:deep(.cart-dialog .el-dialog) {
-  background: #fffaf6;
-  border-radius: 24px;
-  padding: 26px;
-  box-shadow: 0 24px 60px rgba(74, 46, 36, 0.16);
 }
 
 :deep(.cart-dialog .el-dialog__header) {

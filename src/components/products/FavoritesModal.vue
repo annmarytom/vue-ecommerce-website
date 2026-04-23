@@ -83,6 +83,8 @@ function closeDialog() {
 .favorites-card {
   background: linear-gradient(180deg, #fffaf6 0%, #f7efe7 100%);
   color: var(--pf-text);
+  padding: 20px;
+  border-radius: 10px;
 }
 
 .favorites-header {
@@ -189,13 +191,6 @@ function closeDialog() {
   border-color: #e5c0bb;
   background: #faecea;
   font-weight: 700;
-}
-
-:deep(.favorites-dialog .el-dialog) {
-  background: #fffaf6;
-  border-radius: 24px;
-  padding: 26px;
-  box-shadow: 0 24px 60px rgba(74, 46, 36, 0.16);
 }
 
 :deep(.favorites-dialog .el-dialog__header) {

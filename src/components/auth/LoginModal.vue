@@ -100,7 +100,8 @@ async function submitLogin() {
 .login-card {
   background: linear-gradient(180deg, #fffaf6 0%, #f7efe7 100%);
   color: var(--pf-text);
-  padding: 4px;
+  padding: 20px;
+  border-radius: 10px;
 }
 
 .login-header {
@@ -183,13 +184,6 @@ async function submitLogin() {
   font-size: 18px;
   font-weight: 700;
   margin-top: 4px;
-}
-
-:deep(.login-dialog .el-dialog) {
-  background: #fffaf6;
-  border-radius: 24px;
-  padding: 28px;
-  box-shadow: 0 24px 60px rgba(74, 46, 36, 0.16);
 }
 
 :deep(.login-dialog .el-dialog__header) {
