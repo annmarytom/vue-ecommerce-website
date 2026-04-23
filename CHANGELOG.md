@@ -6,6 +6,32 @@ This project follows a structured changelog format with versioned releases and r
 
 ---
 
+## [0.8.0] - 2026-04-23
+
+### Added
+- Added manual minimum and maximum price input fields to the price filter in `FilterSideBar`.
+- Added an **Apply Price** button so users can update the selected price range manually.
+
+### Changed
+- Updated the price filtering UI to support both slider-based selection and manual min/max input.
+- Kept the slider and manual input values synchronized.
+- Added validation to ensure the minimum and maximum values stay within valid price limits.
+- Prevented invalid price ranges such as negative values, values above the available maximum, and minimum values greater than maximum values.
+
+
+## [0.7.0] - 2026-04-22
+
+### Added
+- Added pagination to `ProductGrid`.
+- Products now show 10 items initially.
+- Added page size options to show 10, 20, 30, or 50 products per page.
+
+### Changed
+- Updated product listing UI to display current visible range and total product count.
+- Reset pagination to the first page whenever search, filters, sort, or page size changes.
+
+
+
 ## [0.6.0] - 2026-04-20
 
 ### Changed

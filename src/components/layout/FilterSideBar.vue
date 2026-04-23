@@ -88,13 +88,48 @@
           <span>-</span>
           <span>${{ priceRange[1] }}</span>
         </div>
+
+        <div class="price-inputs">
+          <div class="price-input-group">
+            <label>Min</label>
+
+            <el-input-number
+              v-model="localMinPrice"
+              :min="0"
+              :max="maxPrice"
+              controls-position="right"
+              @change="applyManualPriceRange"
+            />
+          </div>
+
+          <div class="price-input-group">
+            <label>Max</label>
+
+            <el-input-number
+              v-model="localMaxPrice"
+              :min="0"
+              :max="maxPrice"
+              controls-position="right"
+              @change="applyManualPriceRange"
+            />
+          </div>
+        </div>
+
+        <el-button
+          class="apply-btn"
+          type="success"
+          plain
+          @click="applyManualPriceRange"
+        >
+          Apply Price
+        </el-button>
       </div>
     </el-card>
   </aside>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 
 const props = defineProps({
   search: {
@@ -138,8 +173,20 @@ const emit = defineEmits([
 const showDropdown = ref(false)
 const searchBoxRef = ref(null)
 
+const localMinPrice = ref(props.priceRange[0])
+const localMaxPrice = ref(props.priceRange[1])
+
 const visibleSuggestions = computed(() => props.suggestions.slice(0, 6))
 const visibleHistory = computed(() => props.searchHistory.slice(0, 5))
+
+watch(
+  () => props.priceRange,
+  (newValue) => {
+    localMinPrice.value = newValue[0]
+    localMaxPrice.value = newValue[1]
+  },
+  { immediate: true }
+)
 
 function updateSearch(value) {
   emit('update:search', value)
@@ -151,7 +198,39 @@ function updateSelectedCategories(value) {
 }
 
 function updatePriceRange(value) {
+  localMinPrice.value = value[0]
+  localMaxPrice.value = value[1]
   emit('update:price-range', value)
+}
+
+function applyManualPriceRange() {
+  let min = Number(localMinPrice.value)
+  let max = Number(localMaxPrice.value)
+
+  if (Number.isNaN(min)) {
+    min = 0
+  }
+
+  if (Number.isNaN(max)) {
+    max = props.maxPrice
+  }
+
+  if (min < 0) {
+    min = 0
+  }
+
+  if (max > props.maxPrice) {
+    max = props.maxPrice
+  }
+
+  if (min > max) {
+    min = max
+  }
+
+  localMinPrice.value = min
+  localMaxPrice.value = max
+
+  emit('update:price-range', [min, max])
 }
 
 function selectSearch(value) {
@@ -184,6 +263,8 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
+
+
 <style scoped>
 .sidebar-card {
   background: rgba(255, 250, 245, 0.92);
@@ -332,5 +413,29 @@ h3 {
   display: flex;
   justify-content: space-between;
   font-weight: 700;
+}
+
+.price-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.price-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.price-input-group label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pf-text);
+}
+
+.apply-btn {
+  width: 100%;
+  margin-top: 14px;
 }
 </style>
