@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 This project follows a structured changelog format with versioned releases and release dates.
 
 ---
+## [0.9.0] - 2026-04-24
+
+### Added
+- Added user-specific cart storage using logged-in username.
+- Cart items and cart count are now shown only for the current logged-in user.
+- Added login requirement before adding products to cart or viewing cart.
+
+### Fixed
+- Fixed issue where cart count was shared across all users.
+- Fixed price total display showing too many decimal points.
+
+### Changed
+- Updated cart total and product price display to always show two decimal places.
+
+
 
 ## [0.8.1] - 2026-04-23
 

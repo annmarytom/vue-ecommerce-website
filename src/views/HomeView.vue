@@ -51,7 +51,8 @@
     <CartModal
       v-model="showCartModal"
       :cart-products="cartProducts"
-      :total-amount="cartTotal"
+       :cart-items="cartItems"
+      :total-amount="formatMoney(cartTotal)"
       @increase-quantity="increaseCartQuantity"
       @decrease-quantity="decreaseCartQuantity"
       @remove-cart-item="removeCartItem"
@@ -78,7 +79,7 @@ const priceRange = ref([0, 2000])
 const maxPrice = ref(2000)
 
 const favoritesByUser = ref({})
-const cartItems = ref({})
+const cartItemsByUser = ref({})
 
 const isLoggedIn = ref(false)
 const currentUser = ref({
@@ -95,11 +96,13 @@ const showFavoritesModal = ref(false)
 const showCartModal = ref(false)
 
 const shouldOpenFavoritesAfterLogin = ref(false)
+const shouldOpenCartAfterLogin = ref(false)
 const pendingFavoriteProduct = ref(null)
+const pendingCartProduct = ref(null)
 
 const SEARCH_HISTORY_KEY = 'shopsy-search-history'
 const FAVORITES_BY_USER_KEY = 'shopsy-favorites-by-user'
-const CART_KEY = 'shopsy-cart'
+const CART_BY_USER_KEY = 'shopsy-cart-by-user'
 const AUTH_USER_KEY = 'shopsy-auth-user'
 const ACCESS_TOKEN_KEY = 'shopsy-access-token'
 const REFRESH_TOKEN_KEY = 'shopsy-refresh-token'
@@ -107,7 +110,7 @@ const REFRESH_TOKEN_KEY = 'shopsy-refresh-token'
 onMounted(async () => {
   searchHistory.value = readLocalStorage(SEARCH_HISTORY_KEY, [])
   favoritesByUser.value = readLocalStorage(FAVORITES_BY_USER_KEY, {})
-  cartItems.value = readLocalStorage(CART_KEY, {})
+  cartItemsByUser.value = readLocalStorage(CART_BY_USER_KEY, {})
 
   const savedUser = readLocalStorage(AUTH_USER_KEY, null)
   const accessToken = readLocalStorage(ACCESS_TOKEN_KEY, '')
@@ -127,12 +130,7 @@ onMounted(async () => {
 function readLocalStorage(key, fallbackValue) {
   try {
     const savedValue = localStorage.getItem(key)
-
-    if (!savedValue) {
-      return fallbackValue
-    }
-
-    return JSON.parse(savedValue)
+    return savedValue ? JSON.parse(savedValue) : fallbackValue
   } catch {
     return fallbackValue
   }
@@ -174,24 +172,50 @@ const favoriteIds = computed(() => {
   return favoritesByUser.value[currentUserKey.value] || []
 })
 
-const displayName = computed(() => {
-  if (currentUser.value.firstName) {
-    return currentUser.value.firstName
+const cartItems = computed(() => {
+  if (!currentUserKey.value) {
+    return {}
   }
 
-  return currentUser.value.username || ''
+  return cartItemsByUser.value[currentUserKey.value] || {}
 })
 
-function handleProductsLoaded(productList) {
-  products.value = productList
+const displayName = computed(() => {
+  return currentUser.value.firstName || currentUser.value.username || ''
+})
 
-  const highestPrice = Math.ceil(
-    Math.max(...productList.map((item) => item.price), 0)
-  )
+const favoriteCount = computed(() => {
+  return isLoggedIn.value ? favoriteIds.value.length : 0
+})
 
-  maxPrice.value = highestPrice || 2000
-  priceRange.value = [0, maxPrice.value]
-}
+const cartCount = computed(() => {
+  if (!isLoggedIn.value) {
+    return 0
+  }
+
+  return Object.values(cartItems.value).reduce((total, count) => total + count, 0)
+})
+
+const favoriteProducts = computed(() => {
+  return products.value.filter((item) => favoriteIds.value.includes(item.id))
+})
+
+const cartProducts = computed(() => {
+  return products.value
+    .filter((item) => cartItems.value[item.id])
+    .map((item) => ({
+      ...item,
+      quantity: cartItems.value[item.id]
+    }))
+})
+
+const cartTotal = computed(() => {
+  const total = cartProducts.value.reduce((sum, item) => {
+    return sum + item.price * item.quantity
+  }, 0)
+
+  return Number(total.toFixed(2))
+})
 
 const categories = computed(() => {
   return [...new Set(products.value.map((item) => item.category))].sort()
@@ -221,32 +245,20 @@ const filteredHistory = computed(() => {
     .slice(0, 5)
 })
 
-const favoriteCount = computed(() => {
-  return isLoggedIn.value ? favoriteIds.value.length : 0
-})
+function formatMoney(value) {
+  return Number(value || 0).toFixed(2)
+}
 
-const cartCount = computed(() => {
-  return Object.values(cartItems.value).reduce((total, count) => total + count, 0)
-})
+function handleProductsLoaded(productList) {
+  products.value = productList
 
-const favoriteProducts = computed(() => {
-  return products.value.filter((item) => favoriteIds.value.includes(item.id))
-})
+  const highestPrice = Math.ceil(
+    Math.max(...productList.map((item) => item.price), 0)
+  )
 
-const cartProducts = computed(() => {
-  return products.value
-    .filter((item) => cartItems.value[item.id])
-    .map((item) => ({
-      ...item,
-      quantity: cartItems.value[item.id]
-    }))
-})
-
-const cartTotal = computed(() => {
-  return cartProducts.value.reduce((total, item) => {
-    return total + item.price * item.quantity
-  }, 0)
-})
+  maxPrice.value = highestPrice || 2000
+  priceRange.value = [0, maxPrice.value]
+}
 
 function saveSearch(term = search.value) {
   const cleanTerm = term.trim()
@@ -281,6 +293,13 @@ function handleFavoritesClick() {
 }
 
 function handleCartClick() {
+  if (!isLoggedIn.value) {
+    shouldOpenCartAfterLogin.value = true
+    showLoginModal.value = true
+    ElMessage.warning('Please login to view your cart')
+    return
+  }
+
   showCartModal.value = true
 }
 
@@ -314,17 +333,30 @@ function handleLoginSuccess(userData) {
     pendingFavoriteProduct.value = null
   }
 
+  if (pendingCartProduct.value) {
+    addToCartForCurrentUser(pendingCartProduct.value)
+    pendingCartProduct.value = null
+  }
+
   if (shouldOpenFavoritesAfterLogin.value) {
     showFavoritesModal.value = true
     shouldOpenFavoritesAfterLogin.value = false
+  }
+
+  if (shouldOpenCartAfterLogin.value) {
+    showCartModal.value = true
+    shouldOpenCartAfterLogin.value = false
   }
 }
 
 function logoutUser() {
   clearAuthStorage()
   showFavoritesModal.value = false
+  showCartModal.value = false
   shouldOpenFavoritesAfterLogin.value = false
+  shouldOpenCartAfterLogin.value = false
   pendingFavoriteProduct.value = null
+  pendingCartProduct.value = null
   ElMessage.success('Logged out successfully')
 }
 
@@ -382,68 +414,101 @@ function removeFavorite(product) {
 }
 
 function addToCart(product) {
-  const productId = product.id
-  const currentCount = cartItems.value[productId] || 0
-
-  cartItems.value = {
-    ...cartItems.value,
-    [productId]: currentCount + 1
+  if (!isLoggedIn.value) {
+    pendingCartProduct.value = product
+    showLoginModal.value = true
+    ElMessage.warning('Please login to add items to cart')
+    return
   }
 
-  writeLocalStorage(CART_KEY, cartItems.value)
+  addToCartForCurrentUser(product)
+}
+
+function addToCartForCurrentUser(product) {
+  const userKey = currentUserKey.value
+
+  if (!userKey) {
+    return
+  }
+
+  const userCart = cartItemsByUser.value[userKey] || {}
+  const currentCount = userCart[product.id] || 0
+
+  cartItemsByUser.value = {
+    ...cartItemsByUser.value,
+    [userKey]: {
+      ...userCart,
+      [product.id]: currentCount + 1
+    }
+  }
+
+  writeLocalStorage(CART_BY_USER_KEY, cartItemsByUser.value)
   ElMessage.success('Added to cart')
 }
 
 function increaseCartQuantity(product) {
-  const currentCount = cartItems.value[product.id] || 0
-
-  cartItems.value = {
-    ...cartItems.value,
-    [product.id]: currentCount + 1
-  }
-
-  writeLocalStorage(CART_KEY, cartItems.value)
+  addToCartForCurrentUser(product)
 }
 
 function decreaseCartQuantity(product) {
-  const currentCount = cartItems.value[product.id] || 0
+  const userKey = currentUserKey.value
+
+  if (!userKey) {
+    return
+  }
+
+  const userCart = cartItemsByUser.value[userKey] || {}
+  const currentCount = userCart[product.id] || 0
 
   if (currentCount <= 1) {
     removeCartItem(product)
     return
   }
 
-  cartItems.value = {
-    ...cartItems.value,
-    [product.id]: currentCount - 1
+  cartItemsByUser.value = {
+    ...cartItemsByUser.value,
+    [userKey]: {
+      ...userCart,
+      [product.id]: currentCount - 1
+    }
   }
 
-  writeLocalStorage(CART_KEY, cartItems.value)
+  writeLocalStorage(CART_BY_USER_KEY, cartItemsByUser.value)
 }
 
 function removeCartItem(product) {
-  const updatedCart = { ...cartItems.value }
-  delete updatedCart[product.id]
-  cartItems.value = updatedCart
+  const userKey = currentUserKey.value
 
-  writeLocalStorage(CART_KEY, cartItems.value)
+  if (!userKey) {
+    return
+  }
+
+  const userCart = { ...(cartItemsByUser.value[userKey] || {}) }
+  delete userCart[product.id]
+
+  cartItemsByUser.value = {
+    ...cartItemsByUser.value,
+    [userKey]: userCart
+  }
+
+  writeLocalStorage(CART_BY_USER_KEY, cartItemsByUser.value)
   ElMessage.success('Removed from cart')
 }
 </script>
+
 <style scoped>
 .page {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top right, rgba(184, 138, 90, 0.12), transparent 18%),
-    linear-gradient(180deg, #fbf7f2 0%, #f6f1ea 50%, #f1e8dd 100%);
+  background:oklch(0.88 0.03 307.67);
+
 }
 
 .content {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 28px 24px 40px;
+  padding: 24px;
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: 24px;
 }
 

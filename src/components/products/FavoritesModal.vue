@@ -39,7 +39,7 @@
           <div class="favorite-content">
             <h3>{{ item.name }}</h3>
             <p class="category">{{ item.category }}</p>
-            <p class="price">${{ item.price }}</p>
+            <p class="price">${{ Number(item.price).toFixed(2) }}</p>
 
             <el-button
               type="danger"

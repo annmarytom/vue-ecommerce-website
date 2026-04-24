@@ -45,7 +45,7 @@
         </p>
   
         <div class="bottom-row">
-          <span class="price">${{ product.price }}</span>
+          <span class="price">${{ Number(product.price).toFixed(2) }}</span>
   
           <el-button
             type="success"

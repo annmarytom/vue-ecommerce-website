@@ -1,117 +1,92 @@
 <template>
-    <el-dialog
-      :model-value="modelValue"
-      @update:model-value="emit('update:modelValue', $event)"
-      width="800px"
-      :show-close="false"
-      class="cart-dialog"
-      align-center
-    >
-      <div class="cart-card">
-        <div class="cart-header">
-          <h2>My Cart</h2>
-  
-          <button type="button" class="close-btn" @click="closeDialog">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+  <el-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" width="800px"
+    :show-close="false" class="cart-dialog" align-center>
+    <div class="cart-card">
+      <div class="cart-header">
+        <h2>My Cart</h2>
+
+        <button type="button" class="close-btn" @click="closeDialog">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
             stroke="currentColor" class="close-button">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
-          </button>
-        </div>
-  
-        <div v-if="cartProducts.length === 0" class="empty-box">
-          No cart items added yet
-        </div>
-  
-        <div v-else class="cart-grid">
-          <div
-            v-for="item in cartProducts"
-            :key="item.id"
-            class="cart-item"
-          >
-            <img :src="item.image" :alt="item.name" class="cart-image" />
-  
-            <div class="cart-content">
-              <h3>{{ item.name }}</h3>
-              <p class="category">{{ item.category }}</p>
-              <p class="price">${{ item.price }}</p>
-              <p class="quantity">Quantity: {{ item.quantity }}</p>
-  
-              <div class="actions-row">
-                <el-button
-                  type="success"
-                  plain
-                  size="small"
-                  @click="emit('increase-quantity', item)"
-                >
-                  +
-                </el-button>
-  
-                <el-button
-                  type="warning"
-                  plain
-                  size="small"
-                  @click="emit('decrease-quantity', item)"
-                >
-                  -
-                </el-button>
-  
-                <el-button
-                  type="danger"
-                  plain
-                  size="small"
-                  @click="emit('remove-cart-item', item)"
-                >
-                  Remove
-                </el-button>
-              </div>
+        </button>
+      </div>
+
+      <div v-if="cartProducts.length === 0" class="empty-box">
+        No cart items added yet
+      </div>
+
+      <div v-else class="cart-grid">
+        <div v-for="item in cartProducts" :key="item.id" class="cart-item">
+          <img :src="item.image" :alt="item.name" class="cart-image" />
+
+          <div class="cart-content">
+            <h3>{{ item.name }}</h3>
+            <p class="category">{{ item.category }}</p>
+            <p class="price">${{ Number(item.price).toFixed(2) }}</p>
+            <p class="quantity">Quantity: {{ item.quantity }}</p>
+
+            <div class="actions-row">
+              <el-button type="success" plain size="small" @click="emit('increase-quantity', item)">
+                +
+              </el-button>
+
+              <el-button type="warning" plain size="small" @click="emit('decrease-quantity', item)">
+                -
+              </el-button>
+
+              <el-button type="danger" plain size="small" @click="emit('remove-cart-item', item)">
+                Remove
+              </el-button>
             </div>
           </div>
-  
-          <div class="cart-total">
-            Total: ${{ totalAmount }}
-          </div>
+        </div>
+
+        <div class="cart-total">
+          Total: ${{ Number(totalAmount).toFixed(2) }}
         </div>
       </div>
-    </el-dialog>
-  </template>
-  
-  <script setup>
-  defineProps({
-    modelValue: {
-      type: Boolean,
-      default: false
-    },
-    cartProducts: {
-      type: Array,
-      default: () => []
-    },
-    totalAmount: {
-      type: Number,
-      default: 0
-    }
-  })
-  
-  const emit = defineEmits([
-    'update:modelValue',
-    'increase-quantity',
-    'decrease-quantity',
-    'remove-cart-item'
-  ])
-  
-  function closeDialog() {
-    emit('update:modelValue', false)
+    </div>
+  </el-dialog>
+</template>
+
+<script setup>
+defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  },
+  cartProducts: {
+    type: Array,
+    default: () => []
+  },
+  totalAmount: {
+    type: [Number, String],
+    default: 0
   }
-  </script>
-  
+})
+
+const emit = defineEmits([
+  'update:modelValue',
+  'increase-quantity',
+  'decrease-quantity',
+  'remove-cart-item'
+])
+
+function closeDialog() {
+  emit('update:modelValue', false)
+}
+</script>
 
 
- 
-  <style scoped>
+
+
+<style scoped>
 .cart-card {
   background: linear-gradient(180deg, #fffaf6 0%, #f7efe7 100%);
   color: var(--pf-text);
-  padding:20px;
+  padding: 20px;
   border-radius: 10px;
 }
 
