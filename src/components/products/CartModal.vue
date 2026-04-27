@@ -1,14 +1,30 @@
 <template>
-  <el-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" width="800px"
-    :show-close="false" class="cart-dialog" align-center>
+  <el-dialog
+    :model-value="modelValue"
+    @update:model-value="emit('update:modelValue', $event)"
+    width="800px"
+    :show-close="false"
+    class="cart-dialog"
+    align-center
+  >
     <div class="cart-card">
       <div class="cart-header">
         <h2>My Cart</h2>
 
         <button type="button" class="close-btn" @click="closeDialog">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-            stroke="currentColor" class="close-button">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="close-button"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18 18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -23,28 +39,59 @@
 
           <div class="cart-content">
             <h3>{{ item.name }}</h3>
-            <p class="category">{{ item.category }}</p>
-            <p class="price">${{ Number(item.price).toFixed(2) }}</p>
-            <p class="quantity">Quantity: {{ item.quantity }}</p>
+
+            <p class="category">
+              {{ item.category }}
+            </p>
+
+            <p class="price">
+              Unit Price: ${{ formatMoney(item.price) }}
+            </p>
+
+            <p class="quantity">
+              Quantity: {{ item.quantity }}
+            </p>
 
             <div class="actions-row">
-              <el-button type="success" plain size="small" @click="emit('increase-quantity', item)">
+              <el-button
+                type="success"
+                plain
+                size="small"
+                @click="emit('increase-quantity', item)"
+              >
                 +
               </el-button>
 
-              <el-button type="warning" plain size="small" @click="emit('decrease-quantity', item)">
+              <el-button
+                type="warning"
+                plain
+                size="small"
+                @click="emit('decrease-quantity', item)"
+              >
                 -
               </el-button>
 
-              <el-button type="danger" plain size="small" @click="emit('remove-cart-item', item)">
+              <el-button
+                type="danger"
+                plain
+                size="small"
+                @click="emit('remove-cart-item', item)"
+              >
                 Remove
               </el-button>
             </div>
           </div>
+
+          <div class="cart-item-total">
+            <span class="total-label">Item Total</span>
+            <span class="total-price">
+              ${{ getItemTotal(item) }}
+            </span>
+          </div>
         </div>
 
         <div class="cart-total">
-          Total: ${{ Number(totalAmount).toFixed(2) }}
+          Cart Total: ${{ formatMoney(totalAmount) }}
         </div>
       </div>
     </div>
@@ -77,10 +124,18 @@ const emit = defineEmits([
 function closeDialog() {
   emit('update:modelValue', false)
 }
+
+function formatMoney(value) {
+  return Number(value || 0).toFixed(2)
+}
+
+function getItemTotal(item) {
+  const price = Number(item.price || 0)
+  const quantity = Number(item.quantity || 0)
+
+  return formatMoney(price * quantity)
+}
 </script>
-
-
-
 
 <style scoped>
 .cart-card {
@@ -101,11 +156,6 @@ function closeDialog() {
   margin: 0;
   font-size: 24px;
   font-weight: 800;
-}
-
-.helper-text {
-  margin: 6px 0 0;
-  color: var(--pf-text-soft);
 }
 
 .close-btn {
@@ -164,6 +214,7 @@ function closeDialog() {
 
 .cart-content {
   flex: 1;
+  min-width: 0;
 }
 
 .cart-content h3 {
@@ -180,11 +231,13 @@ function closeDialog() {
   margin: 0 0 8px;
   color: var(--pf-accent);
   font-weight: 800;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .quantity {
   margin: 0 0 12px;
+  color: var(--pf-text);
+  font-weight: 600;
 }
 
 .actions-row {
@@ -193,28 +246,28 @@ function closeDialog() {
   flex-wrap: wrap;
 }
 
-.qty-btn,
-.remove-btn {
-  border-radius: 999px;
+.cart-item-total {
+  min-width: 150px;
+  border-left: 1px solid var(--pf-border);
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.total-label {
+  color: var(--pf-text-soft);
+  font-size: 13px;
   font-weight: 700;
+  margin-bottom: 8px;
 }
 
-.plus-btn {
+.total-price {
   color: var(--pf-accent);
-  border-color: #d7b3ac;
-  background: #f6eae7;
-}
-
-.minus-btn {
-  color: var(--pf-text);
-  border-color: var(--pf-border);
-  background: #faf4ed;
-}
-
-.remove-btn {
-  color: #9a4f46;
-  border-color: #e5c0bb;
-  background: #faecea;
+  font-size: 22px;
+  font-weight: 900;
 }
 
 .cart-total {
@@ -222,6 +275,7 @@ function closeDialog() {
   font-size: 22px;
   font-weight: 800;
   color: var(--pf-accent);
+  padding-top: 8px;
 }
 
 :deep(.cart-dialog .el-dialog__header) {
@@ -235,5 +289,30 @@ function closeDialog() {
 .close-button {
   width: 22px;
   height: 22px;
+}
+
+@media (max-width: 700px) {
+  .cart-item {
+    flex-direction: column;
+  }
+
+  .cart-image {
+    width: 100%;
+    height: 180px;
+  }
+
+  .cart-item-total {
+    min-width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--pf-border);
+    padding-left: 0;
+    padding-top: 14px;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .cart-total {
+    text-align: left;
+  }
 }
 </style>

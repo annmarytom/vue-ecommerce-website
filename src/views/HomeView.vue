@@ -49,14 +49,13 @@
     />
 
     <CartModal
-      v-model="showCartModal"
-      :cart-products="cartProducts"
-       :cart-items="cartItems"
-      :total-amount="formatMoney(cartTotal)"
-      @increase-quantity="increaseCartQuantity"
-      @decrease-quantity="decreaseCartQuantity"
-      @remove-cart-item="removeCartItem"
-    />
+  v-model="showCartModal"
+  :cart-products="cartProducts"
+  :total-amount="cartTotal"
+  @increase-quantity="increaseCartQuantity"
+  @decrease-quantity="decreaseCartQuantity"
+  @remove-cart-item="removeCartItem"
+/>
   </div>
 </template>
 
